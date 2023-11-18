@@ -1,0 +1,251 @@
+<!doctype html>
+<html>
+<style>
+form {
+    margin: auto;
+    width: 75%;
+    padding: 1.5rem;
+}
+.result {
+    margin: auto;
+    width: 75%;
+    border: 1px solid #ccc;
+}
+</style>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TourWise Ke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+</head>
+<body>
+    <nav class="navbar navbar-dark sticky-top">
+        <div>
+            <a class="home" href="{{ url_for('main') }}">Home</a>
+        </div>
+    </nav>
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Sign In</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+              </div>
+            </div>
+          </div>
+        </div>
+
+    <div class="container mt-10">
+        <div class="row">
+            <div class="col-md-6">
+                <form action="{{ url_for('main') }}" class="predict-form mb-2" method="POST">
+{#                    <div class="form-body">#}
+                        <input name="month-today" id="month-today" type="number" value="">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Enter Place:</label>
+                                <input name="select_place" class="" id="select_place" />
+                            </div>
+                            <div class="col-md-6">
+                                <label>Enter age:</label>
+                                <input name="age" type="number" id="age" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Temperature:</label>
+                                <input name="temperature" type="number" id="temperature"  step="0.01" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Income in Ksh:</label>
+                                <input name="income" type="number" id="income" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Humidity: </label>
+                                <input name="humidity" type="number" id="humidity"  step="0.01" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Duration of stay: </label>
+                                <input name="duration" type="number" id="duration"  required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Gender: </label>
+                                <select name="select_gender" class="form-select" id="select_gender">
+                                    <option value="1">Male</option>
+                                    <option value="0">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Number of people: </label>
+                                <input name="no_of_people" type="number" id="no_of_people" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <select name="select_accommodation" class="form-select" id="select_accommodation">
+                                <option value="">--Type of Desired Accommodation--</option>
+                                <option value="Airbnb">Airbnb</option>
+                                <option value="Camping">Campsite</option>
+                                <option value="Guest House">Guest House</option>
+                                <option value="Hostel">Hostel</option>
+                                <option value="Hotel">Hotel</option>
+                                <option value="Motel">Motel</option>
+                                <option value="Resort">Resort</option>
+                                <option value="Villa">Villa</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <script>
+                            document.getElementById("month-today").value = new Date().getMonth();
+                            const humidity = document.getElementById(('humidity'))
+                            const temperature = document.getElementById('temperature');
+                            const selectPlace = document.getElementById('select_place');
+
+                            selectPlace.addEventListener('change', () => {
+                                var place=document.getElementById('select_place').value;
+                                checkWeather(place)
+                            })
+                            let currWeather;
+                            const checkWeather = async (place, callback) => {
+                                let weatherData  = await fetch(`https://api.weatherapi.com/v1/current.json?key=be14007191cf4192b20110252231002&q=${place}&aqi=no`)
+                                let weatherDataJson = await weatherData.json();
+                                currWeather = weatherDataJson;
+                                humidity.value = weatherDataJson.current.humidity;
+                                temperature.value = weatherDataJson.current.feelslike_c;
+                                console.log(weatherDataJson.current)
+                                return weatherDataJson;
+                            }
+                            console.log(currWeather)
+
+                        </script>
+                        <div  class="form-item">
+                            <input class="submit-button" type="submit">
+                        </div>
+{#                    </div>#}
+                </form>
+            </div>
+            <div class="col-md-6">
+                <div class="result" align="left">
+                    {% if result %}
+                        {{ place }}
+                        {% for variable, value in original_input.items() %}
+                            <div>{{ variable }} : {{ value }}</div>
+                        {% endfor %}
+                        <br>
+                        <br> Predicted expenditure:
+                           <p style="font-size:50px">{{ result }}</p>
+                        {% else %}
+                        <div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <hr />
+
+    <div style="display: block" id="loading-div">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer poo">
+        <div class="container">
+            <div class="row">
+                <div class="col-4 col-sm-3">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a>Home</a></li>
+                        <li><a>Visits</a></li>
+                        <li><a>News</a></li>
+                        <li>Help us contribute to improving our application by filling <a href="https://docs.google.com/forms/d/e/1FAIpQLScKLkn6ihNbOR_stsGp1WAKM-VhKlJhaIAzqV5ZglNDyMS5aQ/viewform?usp=sf_link" target="_blank">this form</a></li>
+                    </ul>
+                </div>
+                <div class="col-7 col-sm-5">
+                    <h5>Our Address</h5>
+                    <address>
+		              121, Nakuru-Kabarak road<br>
+		              TourWise, Nakuru<br>
+		              KENYA<br>
+		              Tel.: +254 791 440-095<br>
+                      Fax1: +254 757 185-189<br>
+                      Fax2: +254 797 696-485<br>
+		              Email: <a href="mailto:tourwise@gmail.com">tourwise@gmail.com</a>
+		           </address>
+                </div>
+                <div class="col-12 col-sm-4 align-self-center">
+                    <div class="text-center">
+                        <a href="http://google.com/+">Google+</a>
+                        <a href="http://www.facebook.com/profile.php?id=">Facebook</a>
+                        <a href="http://www.linkedin.com/in/">LinkedIn</a>
+                        <a href="http://twitter.com/">Twitter</a>
+                        <a href="http://youtube.com/">YouTube</a>
+                        <a href="mailto:">Mail</a>
+                    </div>
+                </div>
+           </div>
+           <div class="row justify-content-center">
+                <div class="col-auto">
+                    <p>© Copyright 2023 TourWise</p>
+                </div>
+           </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+        // Get the loading text element
+        const loadingDiv = document.getElementById("loading-div");
+        const placesDiv = document.getElementById("places-div")
+        // Show the loading text
+        loadingDiv.style.display = "block";
+
+        // Hide the loading text after 5 seconds
+        setTimeout(() => {
+          loadingDiv.style.display = "none";
+          placesDiv.style.display = "block";
+        }, 2500);
+
+        function addToVisit(placeId) {
+            fetch('/to-visit/add', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'place_id': placeId
+                })
+            })
+            .then(response => response.json()
+            )
+            .then(data => {
+                document.querySelector('#visit-item-count').textContent = data.length;
+                console.log(data.item_count, data.length)
+            })
+            .catch(error => {
+                console.error('Error adding item to cart:', error);
+            });
+        }
+
+        document.querySelectorAll('.add-to-visit-btn').forEach(button => {
+          button.addEventListener('click', event => {
+            const productId = event.target.dataset.placeId;
+            console.log("Here ", productId)
+            addToVisit(productId);
+          });
+});
+
+    </script>
+</body>
+</html>
